@@ -23,7 +23,7 @@
             <form id="staffLoginForm">
                 <div class="form-group">
                     <label for="staffId">Staff ID</label>
-                    <input type="text" id="staffId" name="staffId" required>
+                    <input type="text" id="staffId" name="staffId" required placeholder="e.g., SB001">
                 </div>
 
                 <div class="form-group">
@@ -31,7 +31,19 @@
                     <input type="password" id="password" name="password" required>
                 </div>
 
-                <button type="submit" class="auth-btn">Staff Sign In</button>
+                <div class="demo-credentials">
+                    <p><strong>Demo Staff Accounts:</strong></p>
+                    <p><strong>Chef:</strong> SB001 / chef123</p>
+                    <p><strong>Server:</strong> SB002 / server123</p>
+                    <p><strong>Manager:</strong> SB003 / manager123</p>
+                </div>
+
+                <button type="submit" class="auth-btn" id="staffLoginBtn">
+                    <span class="btn-text">Staff Sign In</span>
+                    <span class="btn-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Signing In...
+                    </span>
+                </button>
             </form>
 
             <div class="auth-links">
@@ -40,6 +52,58 @@
         </div>
     </div>
 
-    <script src="../js/auth.js"></script>
+    <script>
+        // Update staff login in auth.js
+        const staffLoginForm = document.getElementById('staffLoginForm');
+        if (staffLoginForm) {
+            staffLoginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const loginBtn = document.getElementById('staffLoginBtn');
+                const btnText = loginBtn.querySelector('.btn-text');
+                const btnLoading = loginBtn.querySelector('.btn-loading');
+                
+                // Show loading state
+                btnText.style.display = 'none';
+                btnLoading.style.display = 'inline-block';
+                loginBtn.disabled = true;
+
+                const formData = {
+                    staffId: document.getElementById('staffId').value,
+                    password: document.getElementById('password').value
+                };
+
+                try {
+                    const response = await fetch('/.netlify/functions/staff-auth', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Save staff data and token
+                        localStorage.setItem('sunrise_staff', JSON.stringify(result.staff));
+                        localStorage.setItem('sunrise_staff_token', result.token);
+                        
+                        // Redirect to staff dashboard
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    alert('Login failed: ' + error.message);
+                } finally {
+                    // Reset button state
+                    btnText.style.display = 'inline-block';
+                    btnLoading.style.display = 'none';
+                    loginBtn.disabled = false;
+                }
+            });
+        }
+    </script>
 </body>
 </html>

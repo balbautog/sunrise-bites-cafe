@@ -31,7 +31,18 @@
                     <input type="password" id="password" name="password" required>
                 </div>
 
-                <button type="submit" class="auth-btn">Admin Sign In</button>
+                <div class="demo-credentials">
+                    <p><strong>Demo Admin Account:</strong></p>
+                    <p><strong>Username:</strong> admin</p>
+                    <p><strong>Password:</strong> admin123</p>
+                </div>
+
+                <button type="submit" class="auth-btn" id="adminLoginBtn">
+                    <span class="btn-text">Admin Sign In</span>
+                    <span class="btn-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Signing In...
+                    </span>
+                </button>
             </form>
 
             <div class="auth-links">
@@ -40,6 +51,58 @@
         </div>
     </div>
 
-    <script src="../js/auth.js"></script>
+    <script>
+        // Update admin login in auth.js
+        const adminLoginForm = document.getElementById('adminLoginForm');
+        if (adminLoginForm) {
+            adminLoginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const loginBtn = document.getElementById('adminLoginBtn');
+                const btnText = loginBtn.querySelector('.btn-text');
+                const btnLoading = loginBtn.querySelector('.btn-loading');
+                
+                // Show loading state
+                btnText.style.display = 'none';
+                btnLoading.style.display = 'inline-block';
+                loginBtn.disabled = true;
+
+                const formData = {
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value
+                };
+
+                try {
+                    const response = await fetch('/.netlify/functions/admin-auth', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Save admin data and token
+                        localStorage.setItem('sunrise_admin', JSON.stringify(result.admin));
+                        localStorage.setItem('sunrise_admin_token', result.token);
+                        
+                        // Redirect to admin dashboard
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    alert('Login failed: ' + error.message);
+                } finally {
+                    // Reset button state
+                    btnText.style.display = 'inline-block';
+                    btnLoading.style.display = 'none';
+                    loginBtn.disabled = false;
+                }
+            });
+        }
+    </script>
 </body>
 </html>

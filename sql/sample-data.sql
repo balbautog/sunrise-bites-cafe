@@ -53,3 +53,43 @@ INSERT INTO admins (username, password_hash, full_name) VALUES
 -- Insert sample customer
 INSERT INTO users (email, password_hash, full_name, phone) VALUES
 ('customer@example.com', '$2b$10$customerhash', 'Jane Doe', '+1234567890');
+
+-- Add sample orders for staff testing
+INSERT INTO orders (order_number, user_id, total_amount, status, special_instructions) VALUES
+('SB1001', 1, 25.97, 'pending', 'Extra crispy bacon please'),
+('SB1002', 1, 18.99, 'confirmed', 'Allergies: gluten-free toast required'),
+('SB1003', 1, 32.50, 'preparing', 'Quick delivery requested'),
+('SB1004', 1, 15.75, 'ready', 'No special instructions'),
+('SB1005', 1, 28.25, 'completed', 'Birthday celebration - add candle if possible');
+
+-- Add sample order items
+INSERT INTO order_items (order_id, menu_item_id, quantity, price) VALUES
+(1, 1, 2, 12.99), -- 2x Sunrise Classic
+(1, 16, 1, 2.99), -- 1x Coffee
+(2, 5, 1, 9.99),  -- 1x Avocado Toast
+(2, 9, 1, 8.99),  -- 1x Pancake Stack
+(3, 3, 2, 11.99), -- 2x Breakfast Burrito
+(3, 17, 2, 3.99), -- 2x Orange Juice
+(4, 6, 1, 8.99),  -- 1x Greek Yogurt Bowl
+(4, 13, 1, 6.99), -- 1x Cinnamon Rolls
+(5, 4, 1, 18.99), -- 1x Steak & Eggs
+(5, 18, 1, 5.99), -- 1x Smoothie
+(5, 19, 1, 3.99); -- 1x Side of Bacon
+
+-- Add order status history
+INSERT INTO order_status_history (order_id, status, notes) VALUES
+(1, 'pending', 'Order placed by customer'),
+(2, 'pending', 'Order placed by customer'),
+(2, 'confirmed', 'Order confirmed by staff SB002'),
+(3, 'pending', 'Order placed by customer'),
+(3, 'confirmed', 'Order confirmed by staff SB003'),
+(3, 'preparing', 'Order sent to kitchen'),
+(4, 'pending', 'Order placed by customer'),
+(4, 'confirmed', 'Order confirmed by staff SB002'),
+(4, 'preparing', 'Order sent to kitchen'),
+(4, 'ready', 'Order ready for pickup'),
+(5, 'pending', 'Order placed by customer'),
+(5, 'confirmed', 'Order confirmed by staff SB003'),
+(5, 'preparing', 'Order sent to kitchen'),
+(5, 'ready', 'Order ready for pickup'),
+(5, 'completed', 'Order picked up by customer');

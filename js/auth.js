@@ -1,65 +1,116 @@
 // Authentication form handling
 document.addEventListener('DOMContentLoaded', function() {
     // Customer Login Form
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = {
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value
-            };
-            
-            // Simple validation
-            const errors = validateForm(formData);
-            if (errors.length > 0) {
-                alert('Please fix the following errors:\n' + errors.join('\n'));
-                return;
+    // Update the customer login section in auth.js
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = loginBtn.querySelector('.btn-text');
+        const btnLoading = loginBtn.querySelector('.btn-loading');
+        
+        // Show loading state
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline-block';
+        loginBtn.disabled = true;
+
+        const formData = {
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        };
+
+        try {
+            const response = await fetch('/.netlify/functions/customer-auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Save user data and token
+                localStorage.setItem('sunrise_customer', JSON.stringify(result.user));
+                localStorage.setItem('sunrise_token', result.token);
+                
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                throw new Error(result.message);
             }
-            
-            // Simulate login process
-            console.log('Customer login attempt:', formData);
-            alert('Login functionality will be implemented in Phase 3 with database connection');
-            // window.location.href = 'menu.html';
-        });
-    }
-    
-    // Customer Signup Form
-    const signupForm = document.getElementById('signupForm');
-    if (signupForm) {
-        signupForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = {
-                fullName: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                password: document.getElementById('password').value,
-                confirmPassword: document.getElementById('confirmPassword').value
-            };
-            
-            // Validation
-            const errors = [];
-            if (!formData.fullName) errors.push('Full name is required');
-            if (!formData.email) errors.push('Email is required');
-            if (!formData.phone) errors.push('Phone number is required');
-            if (!formData.password) errors.push('Password is required');
-            if (formData.password !== formData.confirmPassword) {
-                errors.push('Passwords do not match');
+        } catch (error) {
+            alert('Login failed: ' + error.message);
+        } finally {
+            // Reset button state
+            btnText.style.display = 'inline-block';
+            btnLoading.style.display = 'none';
+            loginBtn.disabled = false;
+        }
+    });
+}
+
+// Update customer signup section
+const signupForm = document.getElementById('signupForm');
+if (signupForm) {
+    signupForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const signupBtn = document.getElementById('signupBtn');
+        const btnText = signupBtn.querySelector('.btn-text');
+        const btnLoading = signupBtn.querySelector('.btn-loading');
+        
+        // Show loading state
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline-block';
+        signupBtn.disabled = true;
+
+        const formData = {
+            fullName: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            password: document.getElementById('password').value
+        };
+
+        // Validation
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        if (formData.password !== confirmPassword) {
+            alert('Passwords do not match!');
+            btnText.style.display = 'inline-block';
+            btnLoading.style.display = 'none';
+            signupBtn.disabled = false;
+            return;
+        }
+
+        try {
+            const response = await fetch('/.netlify/functions/customer-signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Account created successfully! Please log in.');
+                window.location.href = 'login.html';
+            } else {
+                throw new Error(result.message);
             }
-            if (formData.password && formData.password.length < 6) {
-                errors.push('Password must be at least 6 characters');
-            }
-            
-            if (errors.length > 0) {
-                alert('Please fix the following errors:\n' + errors.join('\n'));
-                return;
-            }
-            
-            // Simulate signup process
-            console.log('Customer signup attempt:', formData);
-            alert('Signup functionality will be implemented in Phase 3 with database connection');
-            // window.location.href = 'login.html';
-        });
+        } catch (error) {
+            alert('Signup failed: ' + error.message);
+        } finally {
+            // Reset button state
+            btnText.style.display = 'inline-block';
+            btnLoading.style.display = 'none';
+            signupBtn.disabled = false;
+        }
+    });
     }
     
     // Staff Login Form

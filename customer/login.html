@@ -31,7 +31,18 @@
                     <input type="password" id="password" name="password" required>
                 </div>
 
-                <button type="submit" class="auth-btn">Sign In</button>
+                <div class="demo-credentials">
+                    <p><strong>Demo Account:</strong><br>
+                    Email: customer@example.com<br>
+                    Password: demo123</p>
+                </div>
+
+                <button type="submit" class="auth-btn" id="loginBtn">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Signing In...
+                    </span>
+                </button>
             </form>
 
             <div class="auth-links">
