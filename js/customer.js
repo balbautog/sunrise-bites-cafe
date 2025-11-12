@@ -330,46 +330,47 @@ class CustomerApp {
 
     async checkout() {
         if (this.cart.length === 0) {
-            alert('Your cart is empty!');
-            return;
+        alert('Your cart is empty!');
+        return;
+    }
+
+    if (!this.currentUser) {
+        alert('Please log in to place an order.');
+        return;
+    }
+
+    try {
+        const totalAmount = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        const orderData = {
+            userId: this.currentUser.id,
+            items: this.cart,
+            totalAmount: totalAmount,
+            specialInstructions: ''
+        };
+
+        // Update this line to use the correct endpoint
+        const response = await fetch(`${this.API_BASE}/orders`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Order placed successfully! Your order number is: ' + result.order.orderNumber);
+            this.clearCart();
+            this.toggleCart();
+            this.loadOrders();
+        } else {
+            throw new Error(result.message);
         }
-
-        if (!this.currentUser) {
-            alert('Please log in to place an order.');
-            return;
-        }
-
-        try {
-            const totalAmount = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
-            const orderData = {
-                userId: this.currentUser.id,
-                items: this.cart,
-                totalAmount: totalAmount,
-                specialInstructions: '' // Could be collected from a form
-            };
-
-            const response = await fetch(`${this.API_BASE}/orders`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(orderData)
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                alert('Order placed successfully! Your order number is: ' + result.order.orderNumber);
-                this.clearCart();
-                this.toggleCart();
-                this.loadOrders(); // Refresh orders list
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error) {
-            console.error('Checkout failed:', error);
-            alert('Failed to place order. Please try again.');
+    } catch (error) {
+        console.error('Checkout failed:', error);
+        alert('Failed to place order. Please try again.');
         }
     }
 
