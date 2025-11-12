@@ -321,16 +321,17 @@
         async function testApiEndpoints() {
             updateStatus('apiStatus', 'waiting', 'Testing API endpoints...');
             
-            const endpoints = [
-                'test-connection',
-                'check-tables',
-                'menu',
-                'customer-auth',
-                'staff-auth',
-                'admin-auth',
-                'staff-orders',
-                'admin-management'
-            ];
+            // Update the endpoints array in your test file to:
+                const endpoints = [
+                    'test-connection',
+                    'check-tables', 
+                    'menu',
+                    'customer-login',  // Changed from customer-auth
+                    'staff-login',     // Changed from staff-auth
+                    'admin-login',     // Changed from admin-auth
+                    'staff-orders',
+                    'admin-dashboard'  // Changed from admin-management
+                ];
             
             let passed = 0;
             let failed = 0;
