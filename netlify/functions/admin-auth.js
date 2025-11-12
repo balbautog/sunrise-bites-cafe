@@ -12,28 +12,15 @@ exports.handler = async (event, context) => {
     return { statusCode: 200, headers, body: '' };
   }
 
-  try {
-    if (event.httpMethod === 'POST') {
-      return await handleAdminLogin(JSON.parse(event.body || '{}'));
-    }
-
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ success: false, message: 'Method not allowed' })
-    };
-  } catch (error) {
-    console.error('Admin auth error:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ 
-        success: false, 
-        message: 'Internal server error',
-        error: error.message 
-      })
-    };
+  if (event.httpMethod === 'POST') {
+    return await handleAdminLogin(JSON.parse(event.body || '{}'));
   }
+
+  return {
+    statusCode: 405,
+    headers,
+    body: JSON.stringify({ success: false, message: 'Method not allowed' })
+  };
 };
 
 async function handleAdminLogin(data) {
@@ -70,10 +57,13 @@ async function handleAdminLogin(data) {
 
     const admin = adminResult.rows[0];
     
-    // Demo password check - in real app, use bcrypt
+    // Verify password with bcrypt
     const isValidPassword = await bcrypt.compare(password, admin.password_hash);
     
-    if (!isValidPassword && password !== 'admin123') {
+    // Demo fallback
+    const isDemoPassword = password === 'admin123';
+
+    if (!isValidPassword && !isDemoPassword) {
       return {
         statusCode: 401,
         headers: { 'Access-Control-Allow-Origin': '*' },

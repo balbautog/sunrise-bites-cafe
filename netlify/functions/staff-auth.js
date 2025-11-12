@@ -12,28 +12,15 @@ exports.handler = async (event, context) => {
     return { statusCode: 200, headers, body: '' };
   }
 
-  try {
-    if (event.httpMethod === 'POST') {
-      return await handleStaffLogin(JSON.parse(event.body || '{}'));
-    }
-
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ success: false, message: 'Method not allowed' })
-    };
-  } catch (error) {
-    console.error('Staff auth error:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ 
-        success: false, 
-        message: 'Internal server error',
-        error: error.message 
-      })
-    };
+  if (event.httpMethod === 'POST') {
+    return await handleStaffLogin(JSON.parse(event.body || '{}'));
   }
+
+  return {
+    statusCode: 405,
+    headers,
+    body: JSON.stringify({ success: false, message: 'Method not allowed' })
+  };
 };
 
 async function handleStaffLogin(data) {
@@ -72,17 +59,19 @@ async function handleStaffLogin(data) {
 
     const staff = staffResult.rows[0];
     
-    // Demo password check - in real app, use bcrypt
+    // Verify password with bcrypt
     const isValidPassword = await bcrypt.compare(password, staff.password_hash);
     
-    // Demo passwords for testing
+    // Demo passwords fallback
     const demoPasswords = {
       'SB001': 'chef123',
       'SB002': 'server123', 
       'SB003': 'manager123'
     };
 
-    if (!isValidPassword && password !== demoPasswords[staff.staff_id]) {
+    const isDemoPassword = demoPasswords[staff.staff_id] === password;
+
+    if (!isValidPassword && !isDemoPassword) {
       return {
         statusCode: 401,
         headers: { 'Access-Control-Allow-Origin': '*' },

@@ -5,7 +5,7 @@ exports.handler = async (event, context) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
   };
 
   if (event.httpMethod === 'OPTIONS') {
@@ -16,26 +16,17 @@ exports.handler = async (event, context) => {
     const path = event.path.split('/').pop();
     const data = JSON.parse(event.body || '{}');
 
-    switch (path) {
-      case 'customer-auth':
-        if (event.httpMethod === 'POST') {
-          return await handleCustomerAuth(data);
-        }
-        break;
-      
-      case 'customer-signup':
-        if (event.httpMethod === 'POST') {
-          return await handleCustomerSignup(data);
-        }
-        break;
-      
-      default:
-        return {
-          statusCode: 404,
-          headers,
-          body: JSON.stringify({ success: false, message: 'Endpoint not found' })
-        };
+    if (path === 'customer-auth' && event.httpMethod === 'POST') {
+      return await handleCustomerAuth(data);
+    } else if (path === 'customer-signup' && event.httpMethod === 'POST') {
+      return await handleCustomerSignup(data);
     }
+
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ success: false, message: 'Endpoint not found' })
+    };
   } catch (error) {
     console.error('Auth error:', error);
     return {
@@ -84,11 +75,17 @@ async function handleCustomerAuth(data) {
 
     const user = userResult.rows[0];
     
-    // In a real app, you would verify the password hash
-    // For now, we'll use a simple demo verification
+    // Verify password with bcrypt
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     
-    if (!isValidPassword && password !== 'demo123') {
+    // Demo fallback for demo@example.com / demo123
+    const demoPasswords = {
+      'demo@example.com': 'demo123'
+    };
+    
+    const isDemoPassword = demoPasswords[email] === password;
+
+    if (!isValidPassword && !isDemoPassword) {
       return {
         statusCode: 401,
         headers: { 'Access-Control-Allow-Origin': '*' },
@@ -137,17 +134,6 @@ async function handleCustomerSignup(data) {
       body: JSON.stringify({ 
         success: false, 
         message: 'All fields are required' 
-      })
-    };
-  }
-
-  if (password.length < 6) {
-    return {
-      statusCode: 400,
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ 
-        success: false, 
-        message: 'Password must be at least 6 characters' 
       })
     };
   }

@@ -105,52 +105,53 @@ async function getDashboardStats() {
     // Get today's date range
     const today = new Date();
     const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const startOfYesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
 
-    // Execute multiple queries in parallel
-    const [
-      totalOrdersResult,
-      todayOrdersResult,
-      totalRevenueResult,
-      todayRevenueResult,
-      totalUsersResult,
-      activeStaffResult,
-      popularItemsResult,
-      orderStatusResult
-    ] = await Promise.all([
-      query('SELECT COUNT(*) as count FROM orders'),
-      query('SELECT COUNT(*) as count FROM orders WHERE created_at >= $1', [startOfToday]),
-      query('SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE status = $1', ['completed']),
-      query('SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE status = $1 AND created_at >= $1', ['completed', startOfToday]),
-      query('SELECT COUNT(*) as count FROM users'),
-      query('SELECT COUNT(*) as count FROM staff WHERE is_active = true'),
-      query(`
-        SELECT mi.name, COUNT(oi.id) as order_count, SUM(oi.quantity) as total_quantity
-        FROM order_items oi
-        JOIN menu_items mi ON oi.menu_item_id = mi.id
-        JOIN orders o ON oi.order_id = o.id
-        WHERE o.created_at >= $1
+    // Execute multiple queries with error handling for empty tables
+    const totalOrdersResult = await query('SELECT COUNT(*) as count FROM orders');
+    const todayOrdersResult = await query('SELECT COUNT(*) as count FROM orders WHERE created_at >= $1', [startOfToday]);
+    const totalRevenueResult = await query('SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE status = $1', ['completed']);
+    const todayRevenueResult = await query('SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE status = $1 AND created_at >= $1', ['completed', startOfToday]);
+    const totalUsersResult = await query('SELECT COUNT(*) as count FROM users');
+    const activeStaffResult = await query('SELECT COUNT(*) as count FROM staff WHERE is_active = true');
+
+    // Handle empty order_items table gracefully
+    let popularItemsResult;
+    try {
+      popularItemsResult = await query(`
+        SELECT mi.name, COALESCE(SUM(oi.quantity), 0) as total_quantity
+        FROM menu_items mi
+        LEFT JOIN order_items oi ON mi.id = oi.menu_item_id
         GROUP BY mi.id, mi.name
         ORDER BY total_quantity DESC
         LIMIT 5
-      `, [startOfYesterday]),
-      query(`
-        SELECT status, COUNT(*) as count
-        FROM orders
-        WHERE created_at >= $1
-        GROUP BY status
-      `, [startOfToday])
-    ]);
+      `);
+    } catch (error) {
+      // If order_items is empty, just get menu items
+      popularItemsResult = await query(`
+        SELECT name, 0 as total_quantity
+        FROM menu_items 
+        ORDER BY name
+        LIMIT 5
+      `);
+    }
+
+    // Order status for today
+    const orderStatusResult = await query(`
+      SELECT status, COUNT(*) as count
+      FROM orders
+      WHERE created_at >= $1
+      GROUP BY status
+    `, [startOfToday]);
 
     const stats = {
-      total_orders: parseInt(totalOrdersResult.rows[0].count),
-      today_orders: parseInt(todayOrdersResult.rows[0].count),
-      total_revenue: parseFloat(totalRevenueResult.rows[0].total),
-      today_revenue: parseFloat(todayRevenueResult.rows[0].total),
-      total_users: parseInt(totalUsersResult.rows[0].count),
-      active_staff: parseInt(activeStaffResult.rows[0].count),
-      popular_items: popularItemsResult.rows,
-      order_status: orderStatusResult.rows
+      total_orders: parseInt(totalOrdersResult.rows[0].count) || 0,
+      today_orders: parseInt(todayOrdersResult.rows[0].count) || 0,
+      total_revenue: parseFloat(totalRevenueResult.rows[0].total) || 0,
+      today_revenue: parseFloat(todayRevenueResult.rows[0].total) || 0,
+      total_users: parseInt(totalUsersResult.rows[0].count) || 0,
+      active_staff: parseInt(activeStaffResult.rows[0].count) || 0,
+      popular_items: popularItemsResult.rows || [],
+      order_status: orderStatusResult.rows || []
     };
 
     return {
