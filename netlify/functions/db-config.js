@@ -2,7 +2,7 @@
 const { Pool } = require('pg');
 
 // Get database connection string from environment variables
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL;
 
 const pool = new Pool({
   connectionString,
