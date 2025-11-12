@@ -37,18 +37,14 @@ exports.handler = async (event, context) => {
 
 async function getMenuData() {
   try {
-    // Get categories with active menu items
+    // Get all active categories first
     const categoriesResult = await query(`
-      SELECT c.*, 
-             COUNT(m.id) as item_count
-      FROM categories c
-      LEFT JOIN menu_items m ON c.id = m.category_id AND m.is_available = true
-      WHERE c.is_active = true
-      GROUP BY c.id
-      ORDER BY c.name
+      SELECT * FROM categories 
+      WHERE is_active = true 
+      ORDER BY name
     `);
 
-    // Get menu items
+    // Get all available menu items
     const menuItemsResult = await query(`
       SELECT m.*, c.name as category_name
       FROM menu_items m
@@ -60,24 +56,39 @@ async function getMenuData() {
     const categories = categoriesResult.rows;
     const menuItems = menuItemsResult.rows;
 
-    // Group menu items by category
-    const menuData = categories.map(category => ({
-      ...category,
-      items: menuItems.filter(item => item.category_id === category.id)
-    }));
+    // Group menu items by category manually to avoid duplicates
+    const menuData = categories.map(category => {
+      const categoryItems = menuItems.filter(item => item.category_id === category.id);
+      return {
+        ...category,
+        items: categoryItems
+      };
+    });
+
+    // Filter out categories with no items (optional - remove if you want empty categories to show)
+    const filteredMenuData = menuData.filter(category => category.items.length > 0);
 
     return {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({
         success: true,
-        data: menuData,
-        count: menuItems.length
+        data: filteredMenuData,
+        categories_count: categories.length,
+        items_count: menuItems.length
       })
     };
 
   } catch (error) {
     console.error('Database query error:', error);
-    throw error;
+    return {
+      statusCode: 500,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ 
+        success: false, 
+        message: 'Failed to fetch menu data',
+        error: error.message 
+      })
+    };
   }
 }

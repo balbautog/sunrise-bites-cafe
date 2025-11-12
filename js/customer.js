@@ -160,26 +160,24 @@ class CustomerApp {
     }
 
     filterMenu(categoryId) {
-        const categories = document.querySelectorAll('.menu-category');
-        const filterBtns = document.querySelectorAll('.filter-btn');
+    // Update active filter button
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.category === categoryId) {
+            btn.classList.add('active');
+        }
+    });
 
-        // Update active filter button
-        filterBtns.forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.category === categoryId) {
-                btn.classList.add('active');
-            }
-        });
-
-        // Show/hide categories
-        categories.forEach(category => {
-            if (categoryId === 'all' || category.dataset.category === categoryId) {
-                category.style.display = 'block';
-            } else {
-                category.style.display = 'none';
-            }
-        });
-    }
+    const categories = document.querySelectorAll('.menu-category');
+    
+    categories.forEach(category => {
+        if (categoryId === 'all' || category.dataset.category === categoryId) {
+            category.style.display = 'block';
+        } else {
+            category.style.display = 'none';
+        }
+    });
+}
 
     increaseQuantity(itemId) {
         const item = this.findMenuItem(itemId);
