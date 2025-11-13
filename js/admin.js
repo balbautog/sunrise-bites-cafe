@@ -83,25 +83,24 @@ class AdminApp {
     }
 
     async loadDashboardData() {
-        try {
-            const response = await fetch(`${this.API_BASE}/admin-management`);
-            const result = await response.json();
+    try {
+        const response = await fetch(`${this.API_BASE}/admin-dashboard`);
+        const result = await response.json();
 
-            if (result.success) {
-                this.stats = result.data;
-                this.renderStats();
-                this.renderPopularItems();
-                this.renderOrderStatus();
-                this.loadOrdersAnalytics(30);
-                this.loadRevenueReport('month');
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error) {
-            console.error('Failed to load dashboard data:', error);
-            this.showError('Failed to load dashboard data');
+        if (result.success) {
+            this.stats = result.data;
+            this.renderStats();
+            this.renderPopularItems();
+            this.renderOrderStatus();
+            // Removed chart calls for now
+        } else {
+            throw new Error(result.message);
         }
+    } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+        this.showError('Failed to load dashboard data');
     }
+}
 
     renderStats() {
         const statsGrid = document.getElementById('statsGrid');
