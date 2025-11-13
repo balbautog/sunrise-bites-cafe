@@ -4,8 +4,8 @@ A complete, full-stack online food ordering system built with HTML, CSS, JavaScr
 
 ## 🚀 Live Demo
 
-**Main Site:** [https://sunrise-bites-cafe.netlify.app](https://sunrise-bites-cafe.netlify.app)  
-**System Test:** [https://sunrise-bites-cafe.netlify.app/test/final-test.html](https://sunrise-bites-cafe.netlify.app/test/final-test.html)
+**Main Site:** https://sunrisebff.netlify.app/staff/dashboard.html 
+**System Test:** https://sunrisebff.netlify.app/test/final-test
 
 ## 📋 Features
 
@@ -34,7 +34,7 @@ A complete, full-stack online food ordering system built with HTML, CSS, JavaScr
 ### Demo Accounts
 
 **Customer:**
-- Email: `customer@example.com`
+- Email: `demo@example.com`
 - Password: `demo123`
 
 **Staff:**
