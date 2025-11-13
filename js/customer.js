@@ -373,29 +373,29 @@ class CustomerApp {
     }
 
     async loadOrders() {
-        const ordersContainer = document.getElementById('ordersContainer');
-        if (!ordersContainer || !this.currentUser) return;
+    const ordersContainer = document.getElementById('ordersContainer');
+    if (!ordersContainer || !this.currentUser) return;
 
-        try {
-            const response = await fetch(`${this.API_BASE}/orders?userId=${this.currentUser.id}`);
-            const result = await response.json();
+    try {
+        const response = await fetch(`${this.API_BASE}/orders?userId=${this.currentUser.id}`);
+        const result = await response.json();
 
-            if (result.success) {
-                this.orders = result.data;
-                this.renderOrders();
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error) {
-            console.error('Failed to load orders:', error);
-            ordersContainer.innerHTML = `
-                <div class="error-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>Failed to load orders.</p>
-                </div>
-            `;
+        if (result.success) {
+            this.orders = result.data;
+            this.renderOrders();
+        } else {
+            throw new Error(result.message);
         }
+    } catch (error) {
+        console.error('Failed to load orders:', error);
+        ordersContainer.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Failed to load orders.</p>
+            </div>
+        `;
     }
+}
 
     renderOrders() {
         const ordersContainer = document.getElementById('ordersContainer');

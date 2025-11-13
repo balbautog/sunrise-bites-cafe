@@ -470,17 +470,17 @@ class StaffApp {
     }
 
     setupAutoRefresh() {
-        // Refresh orders every 30 seconds
-        setInterval(() => {
-            this.loadOrders();
-            this.loadKitchenOrders();
-        }, 30000);
+    // Refresh orders every 15 seconds (was 30)
+    setInterval(() => {
+        this.loadOrders();
+        this.loadKitchenOrders();
+    }, 15000);
 
-        // Refresh completed orders every 2 minutes
-        setInterval(() => {
-            this.loadCompletedOrders();
-        }, 120000);
-    }
+    // Refresh completed orders every minute (was 2 minutes)
+    setInterval(() => {
+        this.loadCompletedOrders();
+    }, 60000);
+}
 
     getTimeAgo(date) {
         const now = new Date();
